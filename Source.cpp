@@ -1,6 +1,6 @@
 #include "TVector.h"
 
-void main()
+int main()
 {
 	TVector<int>  one(10);
 }

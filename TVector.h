@@ -282,7 +282,6 @@ template <class T>
 inline double TVector<T>::ScalarProduct(const TVector<T>& vec) const
 {
 	double res = 0;
-	std::exception possible_exception("");
 
 	try
 	{
@@ -296,21 +295,19 @@ inline double TVector<T>::ScalarProduct(const TVector<T>& vec) const
 				}
 				catch (...)
  				{
-					possible_exception = "TVector.ScalarProduct multiplication failure.";
+					throw std::exception("TVector.ScalarProduct multiplication failure.");
 				}
 			}
 		}
 		else
 		{
-			possible_exception = "TVector::ScalarProduct failure: unequal vector size.";
+			throw std::exception("TVector::ScalarProduct failure: unequal vector size.");
 		}
 	}
 	catch (...)
 	{
-		possible_exception = "TVector::ScalarProduct operator == failure.";
+		throw std::exception("TVector::ScalarProduct operator == failure.");
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return res;
 }
@@ -319,8 +316,6 @@ template <class T>
 inline TVector<T> TVector<T>::CrossProduct(const TVector<T>& vec) const
 {
 	TVector res(size);
-	std::exception possible_exception('b');
-	const char exception_flag = 'b';
 
 
 	if (size == 3 && vec.size == 3)
@@ -335,15 +330,13 @@ inline TVector<T> TVector<T>::CrossProduct(const TVector<T>& vec) const
 		}
 		catch (...)
 		{
-			possible_exception = "TVector::CrossProduct multiplication, substraction or memory access failure.";
+			throw std::exception("TVector::CrossProduct multiplication, substraction or memory access failure.");
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::CrossProduct if (size == 3 && vec.size == 3) not fulfilled.";
+		throw std::exception("TVector::CrossProduct if (size == 3 && vec.size == 3) not fulfilled.");
 	}
-
-	if (possible_exception.what != exception_flag) { throw possible_exception; }
 
 	return res;
 }
@@ -352,7 +345,6 @@ template <class T>
 inline double TVector<T>::TripleProduct(const TVector<T>& vec1, const TVector<T>& vec2) const
 {
 	double res;
-	std::exception possible_exception("");
 
 	if (vec1.size == 3 && vec2.size == 3 && size == 3)
 	{
@@ -362,16 +354,14 @@ inline double TVector<T>::TripleProduct(const TVector<T>& vec1, const TVector<T>
 		}
 		catch (...)
 		{
-			possible_exception = "TVector::TripleProduct ScalarProduct, CrossProduct or memory access failure.";
+			throw std::exception("TVector::TripleProduct ScalarProduct, CrossProduct or memory access failure.");
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::TripleProduct if (vec1.size == 3 && vec2.size == 3 && size == 3) not fulfilled.";
+		throw std::exception("TVector::TripleProduct if (vec1.size == 3 && vec2.size == 3 && size == 3) not fulfilled.");
 		res = 0;
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return res;
 }
@@ -383,7 +373,7 @@ inline TVector<T>::TVector(int n)
 
 	try
 	{
-		val = new double[n];
+		val = new T[n];
 	}
 	catch (...)
 	{
@@ -395,7 +385,6 @@ template <class T>
 inline TVector<T>::TVector(int n, T* p)
 {
 	size = n;
-	std::exception possible_exception("");
 
 	try
 	{
@@ -403,7 +392,7 @@ inline TVector<T>::TVector(int n, T* p)
 	}
 	catch (...)
 	{
-		possible_exception = "TVector::TVector(int n, T* p) memory allocation failure.";
+		throw std::exception("TVector::TVector(int n, T* p) memory allocation failure.");
 	}
 
 	for (int i = 0; i < n; i++)
@@ -414,11 +403,9 @@ inline TVector<T>::TVector(int n, T* p)
 		}
 		catch (...)
 		{
-			possible_exception = "TVector::TVector(int n, T* p) assigment failure.";
+			throw std::exception("TVector::TVector(int n, T* p) assigment failure.");
 		}
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 }
 
 template <class T>
@@ -433,7 +420,7 @@ inline TVector<T>::TVector(const TVector<T>& vec)
 	}
 	catch (...)
 	{
-		possible_exception = "TVector::TVector(const TVector<T>& vec) memory allocation failure.";
+		throw std::exception("TVector::TVector(const TVector<T>& vec) memory allocation failure.");
 	}
 
 	for (int i = 0; i < size; i++)
@@ -444,11 +431,9 @@ inline TVector<T>::TVector(const TVector<T>& vec)
 		}
 		catch (...)
 		{
-			possible_exception = "TVector::TVector(const TVector<T>& vec) assigment failure.";
+			throw std::exception("TVector::TVector(const TVector<T>& vec) assigment failure.");
 		}
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 }
 
 template <class T>
@@ -461,8 +446,6 @@ inline TVector<T>::~TVector()
 template <class T>
 inline TVector<T>& TVector<T>::operator =(const TVector<T>& vec)
 {
-	std::exception possible_exception("");
-
 	if (this != &vec)
 	{
 		if (size != vec.size)
@@ -475,7 +458,7 @@ inline TVector<T>& TVector<T>::operator =(const TVector<T>& vec)
 			}
 			catch (...)
 			{
-				possible_exception = "TVector::operator = memory allocation failure.";
+				throw std::exception("TVector::operator = memory allocation failure.");
 			}
 		}
 
@@ -487,16 +470,14 @@ inline TVector<T>& TVector<T>::operator =(const TVector<T>& vec)
 			}
 			catch (...)
 			{
-				possible_exception = "TVector::operator = assigment failure.";
+				throw std::exception("TVector::operator = assigment failure.");
 			}
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::operator =, if (this != &vec) not fulfilled."
+		throw std::exception("TVector::operator =, if (this != &vec) not fulfilled.");
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return *this;
 }
@@ -505,7 +486,6 @@ template <class T>
 inline TVector<T> TVector<T>::operator +(const TVector<T>& vec)
 {
 	TVector res(size);
-	std::exception possible_exception("");
 
 	if (size == vec.size)
 	{
@@ -517,17 +497,14 @@ inline TVector<T> TVector<T>::operator +(const TVector<T>& vec)
 			}
 			catch (...)
 			{
-				possible_exception = "TVector::operator + addition or assignment failure.";
-				break;
+				throw std::exception("TVector::operator + addition or assignment failure.");
 			}
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::operator +, if (size == vec.size) not fulfilled.";
+		throw std::exception("TVector::operator +, if (size == vec.size) not fulfilled.");
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return res;
 }
@@ -536,7 +513,6 @@ template <class T>
 inline TVector<T> TVector<T>::operator -(const TVector<T>& vec)
 {
 	TVector res(size);
-	std::exception possible_exception("");
 
 	if (size == vec.size)
 	{
@@ -548,17 +524,14 @@ inline TVector<T> TVector<T>::operator -(const TVector<T>& vec)
 			}
 			catch (...)
 			{
-				possible_exception = "TVector::operator - substraction or assignment failure.";
-				break;
+				throw std::exception("TVector::operator - substraction or assignment failure.");
 			}
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::operator -, if (size == vec.size) not fulfilled.";
+		throw std::exception("TVector::operator -, if (size == vec.size) not fulfilled.");
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return res;
 }
@@ -587,7 +560,6 @@ template <class T>
 inline TVector<T> TVector<T>::operator /(const double scalar)
 {
 	TVector res(size);
-	std::exception possible_exception("");
 
 	if (scalar != 0)
 	{
@@ -599,17 +571,15 @@ inline TVector<T> TVector<T>::operator /(const double scalar)
 			}
 			catch (...)
 			{
-				possible_exception = "TVector::operator /(const double scalar) failure: division or assignment failure.";
+				throw std::exception("TVector::operator /(const double scalar) failure: division or assignment failure.");
 				break;
 			}
 		}
 	}
 	else
 	{
-		possible_exception = "TVector::operator /(const double scalar) failure: division by zero.";
+		throw std::exception("TVector::operator /(const double scalar) failure: division by zero.");
 	}
-
-	if (possible_exception != "") { throw possible_exception; }
 
 	return res;
 }
@@ -627,8 +597,7 @@ inline T& TVector<T>::operator [](const int index)
 	}
 	else if (abs(index) > size)
 	{
-		//Error implementation
-		return val[0];
+		throw std::exception("TVector::operator [](const int index) failure: abs(index) > size");
 	}
 }
 
@@ -637,7 +606,14 @@ inline TVector<T>& TVector<T>::operator ++()
 {
 	for (int i = 0; i < size; i++)
 	{
-		val[i]++;
+		try
+		{
+			val[i]++;
+		}
+		catch (...)
+		{
+			throw std::exception("TVector::operator ++ failure;");
+		}
 	}
 
 	return *this;
@@ -650,7 +626,14 @@ inline TVector<T> TVector<T>::operator ++(int)
 	
 	for (int i = 0; i < size; i++)
 	{
-		val[i]++;
+		try
+		{
+			val[i]++;
+		}
+		catch (...)
+		{
+			throw std::exception("TVector::operator ++(int) failure;");
+		}
 	}
 
 	return res;
@@ -661,7 +644,14 @@ inline TVector<T>& TVector<T>::operator --()
 {
 	for (int i = 0; i < size; i++)
 	{
-		val[i]--;
+		try
+		{
+			val[i]--;
+		}
+		catch (...)
+		{
+			throw std::exception("TVector::operator -- failure;");
+		}
 	}
 
 	return *this;
@@ -674,7 +664,14 @@ inline TVector<T> TVector<T>::operator --(int)
 
 	for (int i = 0; i < size; i++)
 	{
-		val[i]--;
+		try
+		{
+			val[i]--;
+		}
+		catch (...)
+		{
+			throw std::exception("TVector::operator --(int) failure;");
+		}
 	}
 
 	return res;

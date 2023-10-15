@@ -50,6 +50,12 @@ public:
 #include "TVector.h"
 
 template <class T>
+int TVector<T>::GetSize()
+{
+	return size;
+}
+
+template <class T>
 void TVector<T>::SetSize(unsigned int new_size)
 {
 	if (size != new_size)
@@ -416,7 +422,7 @@ inline TVector<T>::TVector(const TVector<T>& vec)
 
 	try
 	{
-		val = new double[vec.size];
+		val = new T[vec.size];
 	}
 	catch (...)
 	{

@@ -43,8 +43,95 @@ public:
 
 	int GetSize();
 
-	friend std::ostream& operator <<(std::ostream& os, const TVector<T>& vec);
-	friend std::istream& operator >>(std::istream& os, TVector<T>& vec);
+	friend std::ostream& operator <<(std::ostream& os, const TVector<T>& vec)
+	{
+		try
+		{
+			os << "(" << vec.val[0];
+		}
+		catch (...)
+		{
+			throw std::exception("TVector std::ostream& operator << failure");
+		}
+
+		for (int i = 1; i < vec.size; i++)
+		{
+			try
+			{
+				os << ", " << vec.val[i];
+			}
+			catch (...)
+			{
+				throw std::exception("TVector std::ostream& operator << failure");
+			}
+		}
+
+		os << ")";
+		return os;
+	}
+
+	friend std::istream& operator>>(std::istream& is, TVector<T>& vec)
+	{
+		if (is.peek() == '\n')
+		{
+			is.ignore();
+		}
+
+		std::string input;
+		std::getline(is, input);
+		std::istringstream inps(input);
+
+		if (inps.peek() == '(')
+		{
+			inps.ignore();
+		}
+
+		for (int i = 0; i < vec.size; i++)
+		{
+			try
+			{
+				if (i != 0)
+				{
+					if (!(inps.get() == ','))
+					{
+						// Error handling: Failed to extract comma
+						is.setstate(std::ios::failbit);
+						break;
+					}
+				}
+				if (!(inps >> vec.val[i]))
+				{
+					// Error handling: Failed to extract vector element
+					is.setstate(std::ios::failbit);
+					break;
+				}
+			}
+			catch (...)
+			{
+				throw std::exception("TVector std::istream& operator>> failure.");
+			}
+		}
+
+		if (inps.peek() == ' ')
+		{
+			inps.ignore(); // Skipping the space before ')' if there's one
+		}
+
+		if (inps.peek() == ')')
+		{
+			inps.ignore();
+		}
+
+		if (is.rdstate() == std::ios::failbit)
+		{
+			std::cout << "//////INPUT ERROR\n";
+		}
+
+		// Clear any error flags that may have been set on the stream
+		is.clear();
+
+		return is;
+	}
 };
 
 #include "TVector.h"
@@ -63,17 +150,12 @@ void TVector<T>::SetSize(unsigned int new_size)
 		T* new_val;
 		unsigned int breakpoint_size;
 
-		if (new_size > size) { breakpoint_size = size;  }
+		if (new_size > size) { breakpoint_size = size; }
 		else { breakpoint_size = new_size; }
+
 		
-		try
-		{
-			new_val = new T[new_size];
-		}
-		catch (...)
-		{
-			throw std::exception("TVector.SetSize memory allocation failure.");
-		}
+		new_val = new T[new_size];
+		if (new_val == nullptr) { throw std::exception("TVector.SetSize memory allocation failure."); }
 
 		for (int i; i < breakpoint_size; i++)
 		{
@@ -108,91 +190,6 @@ void TVector<T>::SetVal(unsigned int index, const T)
 }
 
 template <class T>
-std::ostream& operator <<(std::ostream& os, const TVector<T>& vec)
-{
-	os << "(" << vec.val[0];
-
-	for (int i = 1; i < vec.size; i++)
-	{
-		try
-		{
-			os << ", " << vec.val[i];
-		}
-		catch (...)
-		{
-			throw std::exception("TVector std::ostream& operator << failure");
-		}
-	}
-
-	os << ")";
-	return os;
-}
-
-template <class T>
-std::istream& operator>>(std::istream& is, TVector<T>& vec)
-{
-	if (is.peek() == '\n')
-	{
-		is.ignore();
-	}
-
-	std::string input;
-	std::getline(is, input);
-	std::istringstream inps(input);
-
-	if (inps.peek() == '(')
-	{
-		inps.ignore();
-	}
-
-	for (int i = 0; i < vec.size; i++)
-	{
-		try
-		{
-			if (i != 0)
-			{
-				if (!(inps.get() == ','))
-				{
-					// Error handling: Failed to extract comma
-					is.setstate(std::ios::failbit);
-					break;
-				}
-			}
-			if (!(inps >> vec.val[i]))
-			{
-				// Error handling: Failed to extract vector element
-				is.setstate(std::ios::failbit);
-				break;
-			}
-		}
-		catch (...)
-		{
-			throw std::exception("TVector std::istream& operator>> failure.");
-		}
-	}
-
-	if (inps.peek() == ' ')
-	{
-		inps.ignore(); // Skipping the space before ')' if there's one
-	}
-
-	if (inps.peek() == ')')
-	{
-		inps.ignore();
-	}
-
-	if (is.rdstate() == std::ios::failbit)
-	{
-		std::cout << "//////INPUT ERROR\n";
-	}
-
-	// Clear any error flags that may have been set on the stream
-	is.clear();
-
-	return is;
-}
-
-template <class T>
 inline TVector<T>& TVector<T>::operator +=(const TVector<T>& vec)
 {
 	try
@@ -204,7 +201,7 @@ inline TVector<T>& TVector<T>::operator +=(const TVector<T>& vec)
 		throw std::exception("TVector operator += failure.");
 	}
 
-	return (*this = *this + vec);
+	return *this;
 }
 
 template <class T>
@@ -219,7 +216,7 @@ inline TVector<T>& TVector<T>::operator -=(const TVector<T>& vec)
 		throw std::exception("TVector operator -= failure.");
 	}
 
-	return (*this = *this - vec);
+	return *this;
 }
 
 template <class T>
@@ -237,7 +234,7 @@ inline bool TVector<T>::operator ==(const TVector<T>& vec) const
 		{
 			try
 			{
-				if (!(val[i] == vec.val[i]))
+				if (val[i] != vec.val[i])
 				{
 					flag_equal = 0;
 					break;
@@ -248,9 +245,9 @@ inline bool TVector<T>::operator ==(const TVector<T>& vec) const
 				throw std::exception("TVector operator == failure. ");
 			}
 		}
-
-		return flag_equal;
 	}
+
+	return flag_equal;
 }
 
 template <class T>
@@ -281,7 +278,7 @@ inline bool TVector<T>::operator !=(const TVector<T>& vec) const
 		}
 	}
 
-	return !flag_equal;
+	return !(flag_equal);
 }
 
 template <class T>
@@ -300,7 +297,7 @@ inline double TVector<T>::ScalarProduct(const TVector<T>& vec) const
 					res = res + (val[i] * vec.val[i]);
 				}
 				catch (...)
- 				{
+				{
 					throw std::exception("TVector.ScalarProduct multiplication failure.");
 				}
 			}
@@ -327,7 +324,7 @@ inline TVector<T> TVector<T>::CrossProduct(const TVector<T>& vec) const
 	if (size == 3 && vec.size == 3)
 	{
 		//Hardcoded formulas
-			
+
 		try
 		{
 			res.val[0] = val[1] * vec.val[2] - val[2] * vec.val[1];
@@ -375,16 +372,9 @@ inline double TVector<T>::TripleProduct(const TVector<T>& vec1, const TVector<T>
 template <class T>
 inline TVector<T>::TVector(int n)
 {
+	val = new T[n];
+	if (val == nullptr) { throw std::exception("TVector::TVector(int n) memory allocation failure."); }
 	size = n;
-
-	try
-	{
-		val = new T[n];
-	}
-	catch (...)
-	{
-		throw std::exception("TVector::TVector(int n) memory allocation failure.");
-	}
 }
 
 template <class T>
@@ -392,12 +382,8 @@ inline TVector<T>::TVector(int n, T* p)
 {
 	size = n;
 
-	try
-	{
-		val = new double[n];
-	}
-	catch (...)
-	{
+	val = new double[n];
+	if (val == nullptr) {
 		throw std::exception("TVector::TVector(int n, T* p) memory allocation failure.");
 	}
 
@@ -420,12 +406,8 @@ inline TVector<T>::TVector(const TVector<T>& vec)
 	size = vec.size;
 	std::exception possible_exception("");
 
-	try
-	{
-		val = new T[vec.size];
-	}
-	catch (...)
-	{
+	val = new T[vec.size];
+	if (val == nullptr) {
 		throw std::exception("TVector::TVector(const TVector<T>& vec) memory allocation failure.");
 	}
 
@@ -458,12 +440,8 @@ inline TVector<T>& TVector<T>::operator =(const TVector<T>& vec)
 		{
 			delete[] val;
 			size = vec.size;
-			try
-			{
-				val = new double[size];
-			}
-			catch (...)
-			{
+			val = new T[size];
+			if (val == nullptr) {
 				throw std::exception("TVector::operator = memory allocation failure.");
 			}
 		}
@@ -605,6 +583,8 @@ inline T& TVector<T>::operator [](const int index)
 	{
 		throw std::exception("TVector::operator [](const int index) failure: abs(index) > size");
 	}
+
+	return val[0];
 }
 
 template <class T>
@@ -629,7 +609,7 @@ template <class T>
 inline TVector<T> TVector<T>::operator ++(int)
 {
 	TVector res(*this);
-	
+
 	for (int i = 0; i < size; i++)
 	{
 		try
